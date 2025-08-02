@@ -1,0 +1,35 @@
+name: Deploy to GitHub Pages # Nom du workflow
+
+on:
+  push:
+    branches:
+      - main # Déclenche le workflow à chaque push sur la branche 'main' (ou 'master')
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest # Le type de machine virtuelle qui exécutera ce job
+
+    steps:
+      - name: Checkout repository 🛎️
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 🚀
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Utilisez une version LTS stable de Node.js
+
+      - name: Install dependencies 📦
+        run: npm install
+
+      - name: Build with Vite 🏗️
+        run: npm run build
+        env: # Injecte les secrets dans l'environnement de build de Vite
+          VITE_CLIENT_ID: ${{ secrets.VITE_CLIENT_ID }}
+          VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
+
+      - name: Deploy to GitHub Pages 🚀
+        uses: peaceiris/actions-gh-pages@v4 # Action pour déployer sur GitHub Pages
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }} # Jeton fourni par GitHub pour l'authentification
+          publish_dir: ./dist # Le dossier de sortie de Vite.js
+          force_orphan: true # Crée une branche gh-pages propre (recommandé pour la propreté)
