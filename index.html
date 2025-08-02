@@ -1,0 +1,2588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faynalytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        /* Inter font for better readability */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Very light, clean background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for scrolling */
+            min-height: 100vh;
+            padding: 16px; /* Reduced overall padding for mobile */
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2rem; /* Adjusted padding for mobile */
+            border-radius: 1.5rem; /* Slightly less rounded corners */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); /* Softer shadow */
+            width: 100%;
+            max-width: 700px; /* Max width optimized for tablets/large phones */
+            border: 1px solid #2d3748; /* Darker subtle border */
+        }
+        h1 {
+            font-size: 2.8rem; /* Adjusted title size for mobile */
+            font-weight: 900;
+            margin-bottom: 1.5rem; /* Adjusted space below title */
+            text-align: center;
+            letter-spacing: -0.04em;
+            background: linear-gradient(45deg, #7f58af, #4299e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #2d3748;
+            font-size: 2rem; /* Adjusted section titles for mobile */
+            font-weight: 700;
+            margin-bottom: 1.5rem; /* Adjusted space */
+            text-align: center;
+        }
+        h3 {
+            color: #4a5568;
+            font-size: 1.5rem; /* Adjusted sub-titles for mobile */
+            font-weight: 600;
+            margin-bottom: 1rem; /* Adjusted space */
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem; /* Adjusted space */
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 0.95rem; /* Slightly smaller label font */
+        }
+        input[type="number"], input[type="text"], input[type="date"], select, textarea {
+            width: 100%;
+            padding: 0.9rem; /* Adjusted padding for inputs */
+            margin-bottom: 1.25rem; /* Adjusted space below inputs */
+            border: 1px solid #cbd5e0;
+            border-radius: 0.75rem; /* Adjusted rounded */
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease-out;
+            font-size: 0.95rem; /* Adjusted input font size */
+        }
+        input[type="number"]:focus, input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+            border-color: #7f58af; /* purple */
+            box-shadow: 0 0 0 4px rgba(127, 88, 175, 0.2); /* Smaller, softer focus ring */
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 1rem 1.5rem; /* Adjusted padding for buttons */
+            color: white;
+            font-weight: 700;
+            border-radius: 1rem; /* Adjusted rounded */
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease-out;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            letter-spacing: 0.02em; /* Slightly tighter letter spacing */
+        }
+        button:hover {
+            transform: translateY(-3px); /* Less noticeable lift */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        .btn-primary {
+            background-color: #7f58af; /* purple */
+        }
+        .btn-primary:hover {
+            background-color: #6c4e95; /* Darker purple on hover */
+        }
+        .btn-secondary {
+            background-color: #48bb78; /* Brighter green */
+        }
+        .btn-secondary:hover {
+            background-color: #38a169;
+        }
+        .btn-danger {
+            background-color: #f56565; /* Brighter red */
+        }
+        .btn-danger:hover {
+            background-color: #e53e3e;
+        }
+        .btn-info {
+            background-color: #4299e1; /* Brighter info blue */
+        }
+        .btn-info:hover {
+            background-color: #3182ce;
+        }
+        .result-box {
+            background-color: #e0f2fe; /* Lighter blue */
+            padding: 1.25rem; /* Adjusted padding */
+            border-radius: 0.85rem; /* Adjusted rounded */
+            margin-top: 1.25rem; /* Adjusted margin */
+            border: 1px solid #90cdf4;
+            color: #2c5282;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: none;
+            font-size: 0.95rem; /* Adjusted result text size */
+        }
+        .result-box.show {
+            display: block;
+        }
+        .result-box p {
+            margin-bottom: 0.25rem; /* Adjusted for tighter spacing */
+        }
+        .result-box p:last-child {
+            margin-bottom: 0;
+        }
+        .error-message {
+            color: #c53030; /* Darker red for errors */
+            background-color: #fed7d7;
+            padding: 0.8rem; /* Adjusted padding */
+            border-radius: 0.6rem; /* Adjusted rounded */
+            margin-bottom: 1rem; /* Adjusted space */
+            text-align: center;
+            font-weight: 600;
+            display: none;
+            font-size: 0.85rem; /* Adjusted error message font size */
+        }
+        .error-message.show {
+            display: block;
+        }
+        .journal-entry {
+            background-color: #f7fafc; /* Very light blue-gray */
+            padding: 1.25rem; /* Adjusted padding */
+            border-radius: 0.9rem; /* Adjusted rounded */
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06); /* Softer shadow */
+            position: relative;
+            transition: transform 0.2s ease-out;
+        }
+        .journal-entry:hover {
+            transform: translateY(-2px); /* Less noticeable lift */
+        }
+        .journal-entry p {
+            margin-bottom: 0.25rem; /* Adjusted space */
+            font-size: 0.9rem;
+        }
+        .journal-entry .label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        .journal-entry .value {
+            color: #2d3748;
+        }
+        .journal-entry .result-positive {
+            color: #10b981; /* Emerald green */
+            font-weight: 700;
+            font-size: 1rem; /* Slightly smaller result font */
+        }
+        .journal-entry .result-negative {
+            color: #ef4444; /* Red */
+            font-weight: 700;
+            font-size: 1rem; /* Slightly smaller result font */
+        }
+        .journal-actions {
+            display: flex;
+            gap: 0.6rem; /* Adjusted space between buttons */
+            margin-top: 1rem; /* Adjusted space */
+            justify-content: flex-end;
+        }
+        .journal-actions button {
+            width: auto;
+            padding: 0.6rem 1.2rem; /* Adjusted padding */
+            font-size: 0.9rem; /* Smaller font */
+            border-radius: 0.6rem; /* Adjusted rounded */
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08); /* More subtle shadow */
+        }
+        .journal-actions button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        /* Styles for performance dashboard */
+        .performance-metric {
+            background-color: #ebf8ff; /* Lighter blue */
+            padding: 1.25rem; /* Adjusted padding */
+            border-radius: 0.9rem;
+            text-align: center;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06); /* Softer shadow */
+            transition: transform 0.2s ease-out;
+        }
+        .performance-metric:hover {
+            transform: translateY(-2px);
+        }
+        .performance-metric p {
+            margin-bottom: 0.25rem;
+            color: #4a5568;
+            font-size: 0.85rem;
+        }
+        .performance-metric .value {
+            font-size: 1.6rem; /* Adjusted font size */
+            font-weight: 700;
+            color: #2b6cb0; /* Darker blue */
+        }
+        .performance-metric.positive .value {
+            color: #10b981; /* Green for gains */
+        }
+        .performance-metric.negative .value {
+            color: #ef4444; /* Red for losses */
+        }
+        .detailed-stats-card {
+            background-color: #f7fafc; /* Lighter background */
+            padding: 1.5rem; /* Adjusted padding */
+            border-radius: 1rem; /* Adjusted rounded */
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* Softer, larger shadow */
+            margin-bottom: 1.5rem; /* Adjusted margin */
+            transition: transform 0.2s ease-out;
+        }
+        .detailed-stats-card:hover {
+            transform: translateY(-2px);
+        }
+        .detailed-stats-card h4 {
+            font-size: 1.25rem; /* Adjusted */
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 1rem; /* Adjusted margin */
+            text-align: center;
+        }
+        .detailed-stats-card table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+        }
+        .detailed-stats-card th, .detailed-stats-card td {
+            padding: 0.6rem 0.8rem; /* Adjusted padding */
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        .detailed-stats-card th {
+            background-color: #e2e8f0; /* Slightly darker header */
+            font-weight: 600;
+            color: #4a5568;
+        }
+        .detailed-stats-card td {
+            color: #2d3748;
+        }
+        .detailed-stats-card tr:nth-child(even) {
+            background-color: #edf2f7; /* Slightly darker even rows */
+        }
+        .detailed-stats-card .positive-text {
+            color: #10b981;
+            font-weight: 600;
+        }
+        .detailed-stats-card .negative-text {
+            color: #ef4444;
+            font-weight: 600;
+        }
+        /* Specific styles for chart containers */
+        .chart-container {
+            position: relative;
+            height: 280px; /* Reduced height for charts on mobile */
+            width: 100%;
+            margin-bottom: 1.5rem; /* Adjusted margin */
+            border: 1px solid #cbd5e0;
+            border-radius: 0.9rem; /* Adjusted rounded */
+            background-color: #ffffff;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06); /* Softer shadow */
+        }
+        /* Ensure tables are scrollable on smaller screens */
+        .overflow-x-auto {
+            overflow-x: auto;
+        }
+        /* Trading Session Status styles */
+        .session-status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 columns on small screens */
+            gap: 0.75rem; /* Adjusted gap */
+            margin-top: 1.5rem; /* Adjusted margin */
+        }
+        @media (min-width: 640px) { /* sm breakpoint */
+            .session-status-grid {
+                grid-template-columns: repeat(4, 1fr); /* 4 columns on larger screens */
+            }
+        }
+        .session-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.85rem; /* Adjusted padding */
+            border-radius: 0.75rem; /* Adjusted rounded */
+            background-color: #f7fafc; /* Lighter background */
+            font-size: 0.9rem; /* Adjusted font size */
+            color: #4a5568;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04); /* Subtle shadow */
+            transition: transform 0.15s ease-out;
+        }
+        .session-item:hover {
+            transform: translateY(-1px);
+        }
+        .session-item .status-indicator {
+            width: 14px; /* Slightly smaller indicator */
+            height: 14px;
+            border-radius: 50%;
+            margin-bottom: 0.3rem; /* Adjusted space */
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .session-item.open .status-indicator {
+            background-color: #48bb78; /* Brighter green for open */
+        }
+        .session-item.closed .status-indicator {
+            background-color: #f56565; /* Brighter red for closed */
+        }
+        /* Styles for the session overlap chart */
+        #tradingSessionsChartCanvas {
+            border: 1px solid #cbd5e0;
+            border-radius: 0.75rem; /* Adjusted rounded */
+            background-color: #ffffff;
+        }
+
+        /* Goal Tracker styles */
+        .goal-progress-bar-container {
+            width: 100%;
+            background-color: #e2e8f0;
+            border-radius: 0.75rem; /* Adjusted rounded */
+            overflow: hidden;
+            margin-top: 1.25rem; /* Adjusted margin */
+        }
+        .goal-progress-bar {
+            height: 24px; /* Slightly shorter bar */
+            background-color: #7f58af; /* purple */
+            width: 0%;
+            border-radius: 0.75rem;
+            text-align: center;
+            color: white;
+            font-weight: 700;
+            line-height: 24px; /* Match height for vertical centering */
+            transition: width 0.5s ease-out, background-color 0.3s ease-out;
+            font-size: 0.85rem; /* Adjusted font size */
+        }
+        .goal-progress-bar.achieved {
+            background-color: #48bb78; /* Brighter green when achieved */
+        }
+        .goal-progress-bar-container + .result-box {
+            margin-top: 0.8rem; /* Closer to the bar */
+        }
+
+        /* Responsive Grid Adjustments */
+        @media (min-width: 768px) { /* md breakpoint - often for tablets */
+            .grid-cols-1.md\:grid-cols-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .grid-cols-1.md\:grid-cols-2.gap-6 {
+                gap: 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) { /* lg breakpoint - for larger tablets and desktops */
+            .container {
+                padding: 4rem;
+                max-width: 1200px;
+            }
+            h1 {
+                font-size: 3.8rem;
+                margin-bottom: 2.5rem;
+            }
+            h2 {
+                font-size: 2.5rem;
+                margin-bottom: 2rem;
+            }
+            h3 {
+                font-size: 1.875rem;
+                margin-bottom: 1.5rem;
+            }
+            label {
+                font-size: 1rem;
+            }
+            input[type="number"], input[type="text"], input[type="date"], select, textarea {
+                padding: 1.125rem;
+                margin-bottom: 1.75rem;
+                border-radius: 0.85rem;
+                font-size: 1rem;
+            }
+            button {
+                padding: 1.25rem 2rem;
+                border-radius: 1.25rem;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            }
+            .result-box {
+                padding: 1.75rem;
+                border-radius: 1rem;
+                margin-top: 1.75rem;
+                font-size: 1.05rem;
+            }
+            .error-message {
+                padding: 1rem;
+                border-radius: 0.75rem;
+                margin-bottom: 1.5rem;
+                font-size: 1rem;
+            }
+            .journal-entry {
+                padding: 1.5rem;
+                border-radius: 1rem;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            }
+            .journal-entry p {
+                margin-bottom: 0.35rem;
+                font-size: initial;
+            }
+            .journal-entry .result-positive, .journal-entry .result-negative {
+                font-size: initial;
+            }
+            .journal-actions {
+                gap: 0.85rem;
+                margin-top: 1.25rem;
+            }
+            .journal-actions button {
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+                border-radius: 0.75rem;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }
+            .performance-metric {
+                padding: 1.5rem;
+                border-radius: 1rem;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            }
+            .performance-metric p {
+                font-size: initial;
+            }
+            .performance-metric .value {
+                font-size: 2rem;
+            }
+            .detailed-stats-card {
+                padding: 2rem;
+                border-radius: 1.25rem;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+                margin-bottom: 2rem;
+            }
+            .detailed-stats-card h4 {
+                font-size: 1.5rem;
+                margin-bottom: 1.25rem;
+            }
+            .detailed-stats-card table {
+                margin-top: 1rem;
+                font-size: initial;
+            }
+            .detailed-stats-card th, .detailed-stats-card td {
+                padding: 0.75rem 1rem;
+            }
+            .chart-container {
+                height: 350px;
+                margin-bottom: 2rem;
+                border-radius: 1rem;
+            }
+            .session-status-grid {
+                gap: 1rem;
+                margin-top: 2rem;
+            }
+            .session-item {
+                padding: 1rem;
+                border-radius: 0.85rem;
+                font-size: 1rem;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            }
+            .session-item .status-indicator {
+                width: 16px;
+                height: 16px;
+                margin-bottom: 0.4rem;
+            }
+            .goal-progress-bar-container {
+                margin-top: 1.5rem;
+            }
+            .goal-progress-bar {
+                height: 28px;
+                line-height: 28px;
+                font-size: 0.95rem;
+            }
+            .goal-progress-bar-container + .result-box {
+                margin-top: 1rem;
+            }
+        }
+
+        /* Specific styles for tabs within Detailed Statistics & Charts */
+        .tab-buttons {
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            gap: 0.5rem; /* Space between buttons */
+            margin-bottom: 1rem; /* Space below tab buttons */
+            justify-content: center; /* Center buttons horizontally */
+        }
+        .tab-button {
+            padding: 0.75rem 1.2rem;
+            border-radius: 0.75rem;
+            background-color: #e2e8f0; /* Light gray for inactive tabs */
+            color: #4a5568;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            border: 1px solid #cbd5e0;
+            flex-grow: 1; /* Allow buttons to grow and fill space */
+            text-align: center;
+            white-space: nowrap; /* Prevent text wrapping within button */
+            overflow: hidden; /* Hide overflow if text is too long */
+            text-overflow: ellipsis; /* Add ellipsis if text is clipped */
+        }
+        .tab-button:hover {
+            background-color: #cfd8e3;
+        }
+        .tab-button.active {
+            background-color: #7f58af; /* Purple for active tab */
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .tab-content {
+            display: none; /* Hidden by default */
+            padding-top: 1rem; /* Space between tab buttons and content */
+        }
+        .tab-content.active {
+            display: block; /* Show active tab content */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="text-center mb-6 md:mb-10">
+            <h1 class="text-indigo-700 mb-2 md:mb-4">Faynalytics</h1>
+            <p class="text-gray-600 text-base md:text-lg">Manage your risk and track your performance.</p>
+        </header>
+
+        <div class="user-auth-section bg-white p-4 md:p-6 rounded-xl shadow-lg border border-gray-200 mb-6">
+            <h2 class="text-gray-800 mb-4 md:mb-6">User Account & Data Sync</h2>
+            <p id="userNameDisplay" class="text-gray-700 text-center text-lg font-semibold mb-3" style="display:none;"></p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button id="authorizeButton" class="btn-primary">Connect to Google Drive</button>
+                <button id="signoutButton" class="btn-danger" style="display:none;">Sign Out</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                <button id="saveToDriveButton" class="btn-info" style="display:none;">Save Journal to Drive</button>
+                <button id="loadFromDriveButton" class="btn-secondary" style="display:none;">Load Journal from Drive</button>
+            </div>
+            <div id="driveStatus" class="text-sm text-gray-500 text-center mt-3"></div>
+            <div id="authErrorMessage" class="error-message mt-3"></div>
+        </div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            <section class="bg-white p-4 md:p-6 rounded-xl shadow-lg border border-gray-200">
+                <h2 class="text-gray-800 mb-4 md:mb-6">Position Size Calculator</h2>
+                <div id="calcErrorMessage" class="error-message"></div>
+                <div class="space-y-3">
+                    <div>
+                        <label for="capital">Account Capital (€) :</label>
+                        <input type="number" id="capital" value="1000" min="1" step="any">
+                    </div>
+                    <div>
+                        <label for="riskPercentage">Risk Percentage per Trade (%) :</label>
+                        <input type="number" id="riskPercentage" value="1" min="0.1" max="10" step="0.1">
+                    </div>
+                    <div>
+                        <label for="currencyPair">Currency Pair / Asset :</label>
+                        <select id="currencyPair">
+                            <option value="EURUSD">EUR/USD</option>
+                            <option value="GBPUSD">GBP/USD</option>
+                            <option value="USDJPY">USD/JPY</option>
+                            <option value="AUDUSD">AUD/USD</option>
+                            <option value="USDCAD">USD/CAD</option>
+                            <option value="USDCHF">USD/CHF</option>
+                            <option value="NZDUSD">NZD/USD</option>
+                            <option value="EURJPY">EUR/JPY</option>
+                            <option value="GBPJPY">GBP/JPY</option>
+                            <option value="XAUUSD">Gold (XAU/USD)</option>
+                            <option value="DAX40">DAX 40 (Germany)</option>
+                            <option value="SP500">S&P 500 (USA)</option>
+                            <option value="NASDAQ100">NASDAQ 100 (USA)</option>
+                            <option value="CAC40">CAC 40 (France)</option>
+                            <option value="custom">Other (enter pip value)</option>
+                        </select>
+                    </div>
+                    <div id="customPipValueContainer" style="display: none;">
+                        <label for="customPipValue">Pip/Point Value per Standard Lot (€) :</label>
+                        <input type="number" id="customPipValue" value="10" min="0.01" step="any">
+                    </div>
+
+                    <div>
+                        <label for="stopLossInputMethod">Stop Loss Input Method :</label>
+                        <select id="stopLossInputMethod">
+                            <option value="pips_direct">Enter Pips Directly</option>
+                            <option value="price_based">Calculate Pips from Price</option>
+                        </select>
+                    </div>
+
+                    <div id="pipsDirectInputContainer">
+                        <label for="stopLossPips">Stop Loss (in Pips) :</label>
+                        <input type="number" id="stopLossPips" value="20" min="1" step="any">
+                    </div>
+
+                    <div id="priceBasedInputContainer" style="display: none;">
+                        <div>
+                            <label for="entryPrice">Entry Price :</label>
+                            <input type="number" id="entryPrice" step="any">
+                        </div>
+                        <div>
+                            <label for="stopLossPrice">Stop Loss Price :</label>
+                            <input type="number" id="stopLossPrice" step="any">
+                        </div>
+                        <div>
+                            <label for="tradeTypeForSL">Trade Type :</label>
+                            <select id="tradeTypeForSL">
+                                <option value="buy">Buy</option>
+                                <option value="sell">Sell</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button onclick="calculatePositionSize()">Calculate Position Size</button>
+                    <div id="resultBox" class="result-box">
+                        <p>Recommended Position Size : <span id="lotSize"></span> lots</p>
+                        <p>Pip/Point Value : <span id="pipValueDisplay"></span> €</p>
+                        <p>Amount Risked : <span id="amountRisqued"></span> €</p>
+                        <p id="calculatedPipsDisplay" style="display:none;">Calculated Pips: <span id="calculatedPips"></span></p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white p-4 md:p-6 rounded-xl shadow-lg border border-gray-200">
+                <h2 class="text-gray-800 mb-4 md:mb-6">Trading Journal</h2>
+                <div id="journalErrorMessage" class="error-message"></div>
+                <form id="journalForm" class="space-y-3 mb-6">
+                    <div>
+                        <label for="journalDate">Date :</label>
+                        <input type="date" id="journalDate" required>
+                    </div>
+                    <div>
+                        <label for="journalAssetSelect">Asset :</label>
+                        <select id="journalAssetSelect">
+                            <option value="EURUSD">EUR/USD</option>
+                            <option value="GBPUSD">GBP/USD</option>
+                            <option value="USDJPY">USD/JPY</option>
+                            <option value="AUDUSD">AUD/USD</option>
+                            <option value="USDCAD">USD/CAD</option>
+                            <option value="USDCHF">USD/CHF</option>
+                            <option value="NZDUSD">NZD/USD</option>
+                            <option value="EURJPY">EUR/JPY</option>
+                            <option value="GBPJPY">GBP/JPY</option>
+                            <option value="XAUUSD">Gold (XAU/USD)</option>
+                            <option value="DAX40">DAX 40 (Germany)</option>
+                            <option value="SP500">S&P 500 (USA)</option>
+                            <option value="NASDAQ100">NASDAQ 100 (USA)</option>
+                            <option value="CAC40">CAC 40 (France)</option>
+                            <option value="other">Other (enter name)</option>
+                        </select>
+                        <input type="text" id="journalAssetCustom" placeholder="Enter asset name" style="display:none; margin-top: 0.3rem;">
+                    </div>
+                    <div>
+                        <label for="journalTradeType">Trade Type :</label>
+                        <select id="journalTradeType">
+                            <option value="Buy">Buy (Long)</option>
+                            <option value="Sell">Sell (Short)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="journalSetup">Setup :</label>
+                        <input type="text" id="journalSetup" placeholder="Ex: Resistance breakout, MA rejection">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label for="journalEntryPrice">Entry :</label>
+                            <input type="number" id="journalEntryPrice" step="any" required>
+                        </div>
+                        <div>
+                            <label for="journalSL">SL :</label>
+                            <input type="number" id="journalSL" step="any" required>
+                        </div>
+                        <div>
+                            <label for="journalTP">TP :</label>
+                            <input type="number" id="journalTP" step="any" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="journalRRR">RRR (Ex: 1:2) :</label>
+                        <input type="text" id="journalRRR" placeholder="Ex: 1:2">
+                    </div>
+                    <div>
+                        <label for="journalPositionSize">Position Size :</label>
+                        <input type="number" id="journalPositionSize" step="any" required>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label for="journalResultEuro">Result (€) :</label>
+                            <input type="number" id="journalResultEuro" step="any">
+                        </div>
+                        <div>
+                            <label for="journalResultPercentage">Result (%) :</label>
+                            <input type="number" id="journalResultPercentage" step="any">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="journalComment">Comment / Emotion :</label>
+                        <textarea id="journalComment" rows="3" placeholder="Notes on the trade, felt emotions..."></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button type="button" class="btn-secondary" onclick="addUpdateJournalEntry(false)">Add to Journal</button>
+                        <button type="button" class="btn-info" onclick="addUpdateJournalEntry(true)">Save Draft</button>
+                    </div>
+                    <button type="button" class="btn-info mt-2" id="cancelEditBtn" style="display:none;" onclick="cancelEdit()">Cancel Edit</button>
+                </form>
+
+                <h3 class="text-gray-800 mb-3 mt-6 md:mt-8">Filter & Sort Options</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                    <div>
+                        <label for="filterAssetSelect">Filter by Asset :</label>
+                        <select id="filterAssetSelect" onchange="applyFiltersAndSort()">
+                            <option value="">All</option>
+                            <option value="EURUSD">EUR/USD</option>
+                            <option value="GBPUSD">GBP/USD</option>
+                            <option value="USDJPY">USD/JPY</option>
+                            <option value="AUDUSD">AUD/USD</option>
+                            <option value="USDCAD">USD/CAD</option>
+                            <option value="USDCHF">USD/CHF</option>
+                            <option value="NZDUSD">NZD/USD</option>
+                            <option value="EURJPY">EUR/JPY</option>
+                            <option value="GBPJPY">GBP/JPY</option>
+                            <option value="XAUUSD">Gold (XAU/USD)</option>
+                            <option value="DAX40">DAX 40 (Germany)</option>
+                            <option value="SP500">S&P 500 (USA)</option>
+                            <option value="NASDAQ100">NASDAQ 100 (USA)</option>
+                            <option value="CAC40">CAC 40 (France)</option>
+                            <option value="other">Other (enter name)</option>
+                        </select>
+                        <input type="text" id="filterAssetCustom" placeholder="Enter asset name" style="display:none; margin-top: 0.3rem;" onkeyup="applyFiltersAndSort()">
+                    </div>
+                    <div>
+                        <label for="filterTradeType">Filter by Trade Type :</label>
+                        <select id="filterTradeType" onchange="applyFiltersAndSort()">
+                            <option value="">All</option>
+                            <option value="Buy">Buy</option>
+                            <option value="Sell">Sell</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="sortBy">Sort by :</label>
+                        <select id="sortBy" onchange="applyFiltersAndSort()">
+                            <option value="timestamp">Date</option>
+                            <option value="resultEuro">Result (€)</option>
+                            <option value="resultPercentage">Result (%)</option>
+                            <option value="asset">Asset</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="sortOrder">Order :</label>
+                        <select id="sortOrder" onchange="applyFiltersAndSort()">
+                            <option value="desc">Descending</option>
+                            <option value="asc">Ascending</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="resetFiltersAndSort()" class="btn-danger mb-6">Reset Filters & Sort</button>
+
+
+                <h3 class="text-gray-800 mb-3 mt-6 md:mt-8">My Journal Entries</h3>
+                <p class="text-center text-gray-600 text-sm" id="noEntriesMessage">No journal entries yet. Add your first trade!</p>
+                <div id="journalEntriesContainer" class="space-y-3">
+                    </div>
+            </section>
+            
+            <section class="md:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow-lg border border-gray-200">
+                <h2 class="text-gray-800 mb-4 md:mb-6 mt-4 md:mt-8">Global Performance Statistics</h2>
+                <div id="performanceDashboard" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 text-center">
+                    <div class="performance-metric">
+                        <p>Total Trades</p>
+                        <p id="totalTrades" class="value">0</p>
+                    </div>
+                    <div class="performance-metric positive">
+                        <p>Winning Trades</p>
+                        <p id="winningTrades" class="value">0</p>
+                    </div>
+                    <div class="performance-metric negative">
+                        <p>Losing Trades</p>
+                        <p id="losingTrades" class="value">0</p>
+                    </div>
+                    <div class="performance-metric">
+                        <p>Win Rate</p>
+                        <p id="winRate" class="value">0.00%</p>
+                    </div>
+                    <div class="performance-metric" id="totalPnLMetric">
+                        <p>Total P&L (€)</p>
+                        <p id="totalPnL" class="value">0.00 €</p>
+                    </div>
+                    <div class="performance-metric" id="totalPnLPercentageMetric">
+                        <p>Total P&L (%)</p>
+                        <p id="totalPnLPercentage" class="value">0.00%</p>
+                    </div>
+                    <div class="performance-metric" id="avgPnLMetric">
+                        <p>Avg P&L per Trade (€)</p>
+                        <p id="avgPnL" class="value">0.00 €</p>
+                    </div>
+                    <div class="performance-metric positive">
+                        <p>Largest Win (€)</p>
+                        <p id="largestWin" class="value">0.00 €</p>
+                    </div>
+                    <div class="performance-metric negative">
+                        <p>Largest Loss (€)</p>
+                        <p id="largestLoss" class="value">0.00 €</p>
+                    </div>
+                </div>
+
+                <h3 class="text-gray-800 mb-3 mt-6 md:mt-8">Performance Goal Tracker</h3>
+                <div id="goalTrackerErrorMessage" class="error-message"></div>
+                <div class="space-y-3">
+                    <div>
+                        <label for="initialCapital">Initial Capital (€) :</label>
+                        <input type="number" id="initialCapital" value="10000" min="1" step="any">
+                    </div>
+                    <div>
+                        <label for="targetPnLEuro">Target P&L (€) :</label>
+                        <input type="number" id="targetPnLEuro" value="1000" min="0.01" step="any">
+                    </div>
+                    <div>
+                        <button onclick="setPerformanceGoal()" class="btn-primary">Set Goal</button>
+                    </div>
+                    <div id="goalProgressDisplay" class="result-box">
+                        <p>Current Progress : <span id="currentGoalProgress">0.00%</span></p>
+                        <div class="goal-progress-bar-container">
+                            <div id="goalProgressBar" class="goal-progress-bar"></div>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1">Note: Progress is calculated based on "Total P&L (€)" and "Target P&L (€)". "Initial Capital (€)" is for context.</p>
+                    </div>
+                </div>
+
+                <h3 class="text-gray-800 mb-3 mt-6 md:mt-8">Trading Session Status (UTC)</h3>
+                <div id="sessionStatus" class="session-status-grid mb-3">
+                    <div class="session-item">
+                        <div id="londonStatus" class="status-indicator"></div>
+                        <span>London</span>
+                    </div>
+                    <div class="session-item">
+                        <div id="newYorkStatus" class="status-indicator"></div>
+                        <span>New York</span>
+                    </div>
+                    <div class="session-item">
+                        <div id="tokyoStatus" class="status-indicator"></div>
+                        <span>Tokyo</span>
+                    </div>
+                    <div class="session-item">
+                        <div id="sydneyStatus" class="status-indicator"></div>
+                        <span>Sydney</span>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 180px;">
+                    <canvas id="tradingSessionsChartCanvas"></canvas>
+                </div>
+            </section>
+
+            <section class="md:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow-lg border border-gray-200 mb-6">
+                <h2 class="text-gray-800 mb-4 md:mb-6">Detailed Statistics & Charts</h2>
+                
+                <div class="tab-buttons" role="tablist" aria-label="Detailed Statistics Options">
+                    <button type="button" class="tab-button active" role="tab" aria-selected="true" aria-controls="equityCurveTab" id="equityCurveTabButton" onclick="showTab('equityCurveTab')">Equity Curve</button>
+                    <button type="button" class="tab-button" role="tab" aria-selected="false" aria-controls="assetTableTab" id="assetTableTabButton" onclick="showTab('assetTableTab')">Assets (Table)</button>
+                    <button type="button" class="tab-button" role="tab" aria-selected="false" aria-controls="tradeTypeTableTab" id="tradeTypeTableTabButton" onclick="showTab('tradeTypeTableTab')">Trade Types (Table)</button>
+                    <button type="button" class="tab-button" role="tab" aria-selected="false" aria-controls="assetChartTab" id="assetChartTabButton" onclick="showTab('assetChartTab')">Assets (Chart)</button>
+                    <button type="button" class="tab-button" role="tab" aria-selected="false" aria-controls="tradeTypeChartTab" id="tradeTypeChartTabButton" onclick="showTab('tradeTypeChartTab')">Trade Types (Chart)</button>
+                </div>
+
+                <div id="equityCurveTab" class="tab-content active" role="tabpanel" aria-labelledby="equityCurveTabButton">
+                    <h3 class="text-gray-800 mb-3 mt-6 md:mt-8">Equity Curve (Cumulative P&L)</h3>
+                    <div class="chart-container">
+                        <canvas id="equityCurveChart"></canvas>
+                    </div>
+                </div>
+
+                <div id="assetTableTab" class="tab-content" role="tabpanel" aria-labelledby="assetTableTabButton">
+                    <h3 class="text-gray-800 mb-3 mt-6 md:mt-8">Performance by Asset (Table)</h3>
+                    <div class="detailed-stats-card !p-0 !shadow-none !border-none !mb-0">
+                        <div id="performanceByAssetTable" class="overflow-x-auto">
+                            <p class="text-center text-gray-600">No asset data available.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tradeTypeTableTab" class="tab-content" role="tabpanel" aria-labelledby="tradeTypeTableTabButton">
+                    <h3 class="text-gray-800 mb-3 mt-6 md:mt-8">Performance by Trade Type (Table)</h3>
+                    <div class="detailed-stats-card !p-0 !shadow-none !border-none !mb-0">
+                        <div id="performanceByTradeTypeTable" class="overflow-x-auto">
+                            <p class="text-center text-gray-600">No trade type data available.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="assetChartTab" class="tab-content" role="tabpanel" aria-labelledby="assetChartTabButton">
+                    <h3 class="text-gray-800 mb-3 mt-6 md:mt-8">Performance by Asset (Chart)</h3>
+                    <div class="chart-container">
+                        <canvas id="assetPerformanceChart"></canvas>
+                    </div>
+                </div>
+
+                <div id="tradeTypeChartTab" class="tab-content" role="tabpanel" aria-labelledby="tradeTypeChartTabButton">
+                    <h3 class="text-gray-800 mb-3 mt-6 md:mt-8">Performance by Trade Type (Chart)</h3>
+                    <div class="chart-container">
+                        <canvas id="tradeTypePerformanceChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script async defer src="https://apis.google.com/js/api.js"></script>
+    <script async defer src="https://accounts.google.com/gsi/client"></script>
+
+    <script>
+        // Key for local storage
+        const LOCAL_STORAGE_KEY = 'tradingJournalEntries';
+        const GOAL_STORAGE_KEY = 'tradingPerformanceGoal';
+
+        // Array to store journal entries
+        let journalEntries = [];
+        // Variable to store the index of the entry being edited
+        let editingEntryIndex = -1; 
+
+        // Goal tracking variables
+        let initialCapital = 10000;
+        let targetPnLEuro = 1000;
+
+        // Global variables for Chart.js instances
+        let equityCurveChartInstance = null;
+        let assetPerformanceChartInstance = null;
+        let tradeTypePerformanceChartInstance = null;
+        let tradingSessionsChartInstance = null;
+
+        // Google API client variables
+        let gapiInited = false;
+        let gisInited = false;
+        let tokenClient;
+        let googleAccessToken = null; 
+        let googleUserId = null; // Ajout pour stocker l'ID utilisateur Google
+        // IMPORTANT: REPLACE THESE WITH YOUR ACTUAL GOOGLE CLOUD PROJECT CREDENTIALS
+        const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
+        const API_KEY = import.meta.env.VITE_API_KEY;
+
+        // Scopes define the permissions your app needs. For Google Drive, this is crucial.
+        // const SCOPES = 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/userinfo.profile'; 
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile'; 
+        const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
+
+        // Element references for auth/drive UI (initialized in DOMContentLoaded)
+        // These are global variables so they can be accessed by functions like maybeEnableButtons
+        let authorizeButton;
+        let signoutButton;
+        let saveToDriveButton;
+        let loadFromDriveButton;
+        let userNameDisplay;
+        let driveStatus;
+        let authErrorMessage;
+
+        // --- Utility Functions for Google API Status and Errors (defined globally) ---
+        function showAuthError(message) {
+            if (authErrorMessage) {
+                authErrorMessage.textContent = message;
+                authErrorMessage.classList.add('show');
+            } else {
+                console.error("Auth error element not found:", message);
+            }
+        }
+
+        function hideAuthError() {
+            if (authErrorMessage) {
+                authErrorMessage.classList.remove('show');
+                authErrorMessage.textContent = '';
+            }
+        }
+
+        // --- Google API Callbacks (defined globally for external script loading) ---
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded. Initializing APIs...');
+            
+            // Initialize reference elements first
+            authorizeButton = document.getElementById('authorizeButton');
+            signoutButton = document.getElementById('signoutButton');
+            saveToDriveButton = document.getElementById('saveToDriveButton');
+            loadFromDriveButton = document.getElementById('loadFromDriveButton');
+            userNameDisplay = document.getElementById('userNameDisplay');
+            driveStatus = document.getElementById('driveStatus');
+            authErrorMessage = document.getElementById('authErrorMessage');
+
+            // Initialize Google API with retries
+            const initializeApis = () => {
+                if (typeof gapi === 'undefined') {
+                    console.log('Waiting for GAPI to load...');
+                    setTimeout(initializeApis, 100);
+                    return;
+                }
+                
+                if (typeof google === 'undefined') {
+                    console.log('Waiting for Google Identity Services to load...');
+                    setTimeout(initializeApis, 100);
+                    return;
+                }
+
+                // Both APIs are loaded, proceed with initialization
+                console.log('Both APIs detected, initializing...');
+                gapi.load('client', initializeGapiClient);
+                gisLoaded(); // Initialize GIS
+            };
+
+            initializeApis();
+        });
+
+        function gapiLoaded() {
+            console.log("gapiLoaded() called by Google API script.");
+            gapi.load('client', initializeGapiClient);
+        }
+
+        function gisLoaded() {
+            console.log("gisLoaded() called by Google Identity Services script.");
+            try {
+                // Wait for Google Identity Services to be fully loaded
+                if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+                    console.log("Waiting for Google Identity Services to load...");
+                    setTimeout(gisLoaded, 100); // Retry after 100ms
+                    return;
+                }
+
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: CLIENT_ID,
+                    scope: SCOPES,
+                    prompt: 'consent',
+                    callback: (tokenResponse) => {
+                        console.log('Token Response reçue:', tokenResponse);
+                        if (tokenResponse && tokenResponse.access_token) {
+                            googleAccessToken = tokenResponse.access_token;
+                            gapi.client.setToken(tokenResponse);
+                            hideAuthError();
+                            updateAuthUI(true);
+                            driveStatus.textContent = 'Authentification réussie!';
+                            fetchUserInfo();
+                        } else {
+                            console.error('Réponse de token invalide:', tokenResponse);
+                            showAuthError('Échec de l\'authentification Google');
+                        }
+                    }
+                });
+                console.log("Token client initialisé avec succès");
+                gisInited = true;
+                maybeEnableButtons();
+                driveStatus.textContent = 'Prêt pour la connexion';
+            } catch (err) {
+                console.error("Erreur lors de l'initialisation du client d'authentification:", err);
+                showAuthError("Erreur d'initialisation du service Google: " + err.message);
+                driveStatus.textContent = 'Erreur d\'initialisation';
+            }
+        }
+
+        // --- Google API Initialization and Auth Handlers (global functions) ---
+        async function initializeGapiClient() {
+            console.log("initializeGapiClient() called.");
+            try {
+                // Ensure GAPI is fully loaded
+                if (typeof gapi === 'undefined' || !gapi.client) {
+                    console.log("Waiting for GAPI to fully load...");
+                    setTimeout(initializeGapiClient, 100); // Retry after 100ms
+                    return;
+                }
+
+                await gapi.client.init({
+                    apiKey: API_KEY, 
+                    discoveryDocs: DISCOVERY_DOCS,
+                });
+                gapiInited = true; // Set true after gapi.client is initialized
+                maybeEnableButtons(); // Check if both are ready
+            } catch (error) {
+                console.error("Error initializing gapi.client:", error);
+                showAuthError("Failed to initialize Google API client. Check API Key and network. " + error.message);
+                gapiInited = false; // Ensure flag is false on error
+            }
+        }
+
+        function maybeEnableButtons() {
+            console.log("maybeEnableButtons() called. gapiInited:", gapiInited, "gisInited:", gisInited);
+            
+            // Ensure all required elements are available
+            if (!authorizeButton) authorizeButton = document.getElementById('authorizeButton');
+            if (!signoutButton) signoutButton = document.getElementById('signoutButton');
+            if (!saveToDriveButton) saveToDriveButton = document.getElementById('saveToDriveButton');
+            if (!loadFromDriveButton) loadFromDriveButton = document.getElementById('loadFromDriveButton');
+            if (!userNameDisplay) userNameDisplay = document.getElementById('userNameDisplay');
+            if (!driveStatus) driveStatus = document.getElementById('driveStatus');
+            if (!authErrorMessage) authErrorMessage = document.getElementById('authErrorMessage');
+
+            if (gapiInited && gisInited) {
+                console.log("Both GAPI and GIS clients are initialized. Attaching button listeners.");
+                
+                // Remove any existing listeners first to prevent duplicates
+                if (authorizeButton) {
+                    authorizeButton.removeEventListener('click', handleAuthClick);
+                    authorizeButton.addEventListener('click', handleAuthClick);
+                }
+                if (signoutButton) {
+                    signoutButton.removeEventListener('click', handleSignoutClick);
+                    signoutButton.addEventListener('click', handleSignoutClick);
+                }
+                if (saveToDriveButton) {
+                    saveToDriveButton.removeEventListener('click', saveJournalToDrive);
+                    saveToDriveButton.addEventListener('click', saveJournalToDrive);
+                }
+                if (loadFromDriveButton) {
+                    loadFromDriveButton.removeEventListener('click', loadJournalFromDrive);
+                    loadFromDriveButton.addEventListener('click', loadJournalFromDrive);
+                }
+
+                // Ensure stop loss method listener is attached (for calculator)
+                const stopLossInputMethodSelect = document.getElementById('stopLossInputMethod');
+                if (stopLossInputMethodSelect) { // Check if element exists before adding listener
+                    // Remove existing listener to prevent duplicates if maybeEnableButtons is called multiple times
+                    stopLossInputMethodSelect.removeEventListener('change', updateSLInputVisibility);
+                    stopLossInputMethodSelect.addEventListener('change', updateSLInputVisibility);
+                }
+
+                // Initial UI update based on current token status
+                const storedToken = gapi.client.getToken();
+                if (storedToken && storedToken.access_token) {
+                    googleAccessToken = storedToken.access_token;
+                    updateAuthUI(true); 
+                } else {
+                    updateAuthUI(false); 
+                }
+            } else {
+                console.log("GAPI and/or GIS not yet fully initialized. Waiting for all scripts/callbacks.");
+            }
+        }
+
+        function handleAuthClick() {
+            console.log("handleAuthClick() called by button click.");
+            hideAuthError();
+            driveStatus.textContent = 'Tentative de connexion...';
+
+            // Vérifie si le script Google est chargé
+            if (typeof google === 'undefined') {
+                console.error("Google API n'est pas chargée");
+                showAuthError("Google API n'est pas chargée. Veuillez rafraîchir la page.");
+                return;
+            }
+
+            // Vérifie si gapi est chargé
+            if (typeof gapi === 'undefined' || !gapi.client) {
+                console.error("GAPI n'est pas initialisé");
+                showAuthError("GAPI n'est pas initialisé. Veuillez rafraîchir la page.");
+                return;
+            }
+
+            // Réinitialise le client si nécessaire
+            if (!tokenClient) {
+                try {
+                    tokenClient = google.accounts.oauth2.initTokenClient({
+                        client_id: CLIENT_ID,
+                        scope: SCOPES,
+                        callback: (response) => {
+                            if (response.error) {
+                                console.error('Erreur d\'authentification:', response.error);
+                                showAuthError('Erreur lors de l\'authentification: ' + response.error);
+                                return;
+                            }
+                            handleTokenResponse(response);
+                        }
+                    });
+                } catch (err) {
+                    console.error("Erreur d'initialisation du client:", err);
+                    showAuthError("Erreur d'initialisation. Veuillez rafraîchir la page.");
+                    return;
+                }
+            }
+
+            // Lance l'authentification
+            try {
+                tokenClient.requestAccessToken({
+                    prompt: 'consent'
+                });
+                console.log("Demande d'authentification envoyée");
+            } catch (err) {
+                console.error("Erreur lors de la demande d'authentification:", err);
+                showAuthError("Erreur de connexion: " + err.message);
+                driveStatus.textContent = 'Échec de la connexion';
+            }
+        }
+
+        async function handleTokenResponse(response) {
+            if (response.access_token) {
+                console.log("Token reçu, initialisation...");
+                try {
+                    googleAccessToken = response.access_token;
+                    await gapi.client.setToken(response);
+                    await updateAuthUI(true);
+                    driveStatus.textContent = 'Connecté avec succès!';
+                    await loadJournalEntries();
+                } catch (err) {
+                    console.error("Erreur post-authentification:", err);
+                    showAuthError("Erreur lors de l'initialisation: " + err.message);
+                }
+            }
+        }
+
+        function handleSignoutClick() {
+            console.log("handleSignoutClick() called.");
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token, () => {
+                    console.log('User signed out from Google.');
+                    gapi.client.setToken('');
+                    googleAccessToken = null;
+                    updateAuthUI(false);
+                    driveStatus.textContent = 'Signed out.';
+                    userNameDisplay.style.display = 'none';
+                    userNameDisplay.textContent = '';
+                    localStorage.removeItem(LOCAL_STORAGE_KEY); 
+                    journalEntries = [];
+                    applyFiltersAndSort(); 
+                    updatePerformanceGoalDisplay();
+                });
+            }
+        }
+
+        async function updateAuthUI(isSignedIn) {
+            console.log("updateAuthUI() called. isSignedIn:", isSignedIn);
+            if (isSignedIn) {
+                if (authorizeButton) authorizeButton.style.display = 'none';
+                if (signoutButton) signoutButton.style.display = 'block';
+                if (saveToDriveButton) saveToDriveButton.style.display = 'block';
+                if (loadFromDriveButton) loadFromDriveButton.style.display = 'block';
+                if (userNameDisplay) userNameDisplay.style.display = 'block';
+                if (driveStatus) driveStatus.textContent = 'Connected to Google Drive.';
+                await fetchUserInfo();
+                loadJournalEntries(); 
+            } else {
+                if (authorizeButton) authorizeButton.style.display = 'block';
+                if (signoutButton) signoutButton.style.display = 'none';
+                if (saveToDriveButton) saveToDriveButton.style.display = 'none';
+                if (loadFromDriveButton) loadFromDriveButton.style.display = 'none';
+                if (userNameDisplay) userNameDisplay.style.display = 'none';
+                if (userNameDisplay) userNameDisplay.textContent = '';
+                if (driveStatus) driveStatus.textContent = 'Not connected to Google Drive.';
+            }
+        }
+
+        async function fetchUserInfo() {
+            try {
+                const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                    headers: { 'Authorization': `Bearer ${googleAccessToken}` }
+                });
+                if (response.ok) {
+                    const userInfo = await response.json();
+                    googleUserId = userInfo.id || null; // Stocke l'ID utilisateur Google
+                    if (userNameDisplay) userNameDisplay.textContent = `Welcome, ${userInfo.name}!`;
+                    console.log("User info fetched:", userInfo);
+                } else {
+                    console.error('Failed to fetch user info:', response.statusText);
+                    if (userNameDisplay) userNameDisplay.textContent = 'Welcome!';
+                }
+            } catch (error) {
+                console.error('Error fetching user info:', error);
+                if (userNameDisplay) userNameDisplay.textContent = 'Welcome!';
+            }
+        }
+
+        // --- Google Drive Integration Functions (global functions) ---
+        const APP_FOLDER_NAME = 'Faynalytics Data';
+        let appFolderId = null;
+
+        async function getAppFolderId() {
+            if (appFolderId) return appFolderId;
+
+            try {
+                console.log("Checking for existing app folder...");
+                const listResponse = await gapi.client.drive.files.list({
+                    q: "mimeType='application/vnd.google-apps.folder' and name='" + APP_FOLDER_NAME + "' and trashed=false",
+                    fields: 'files(id, name)',
+                    spaces: 'drive'
+                });
+
+                const files = listResponse.result.files;
+                console.log("Found folders:", files);
+
+                if (files && files.length > 0) {
+                    appFolderId = files[0].id;
+                    console.log("Using existing folder:", appFolderId);
+                    return appFolderId;
+                }
+
+                console.log("No existing folder found. Creating new folder...");
+                const createResponse = await gapi.client.drive.files.create({
+                    resource: {
+                        name: APP_FOLDER_NAME,
+                        mimeType: 'application/vnd.google-apps.folder'
+                    },
+                    fields: 'id, name'
+                });
+
+                if (!createResponse.result || !createResponse.result.id) {
+                    throw new Error("Failed to create folder - no ID returned");
+                }
+
+                appFolderId = createResponse.result.id;
+                console.log("Created new folder:", appFolderId);
+                return appFolderId;
+            } catch (error) {
+                console.error('Error getting/creating app folder:', error);
+                showAuthError('Failed to access or create Google Drive folder. Please check permissions.');
+                throw error;
+            }
+        }
+
+        function getCurrentUserJournalFileName() {
+            if (googleUserId) {
+                return `faynalytics_journal_${googleUserId}.json`;
+            }
+            return 'faynalytics_journal_local.json'; 
+        }
+
+        async function saveJournalToDrive() { 
+            console.log("saveJournalToDrive() called.");
+            if (!googleAccessToken) {
+                showAuthError('Veuillez vous connecter à Google Drive d\'abord.');
+                return;
+            }
+            if (!gapiInited || !gisInited) {
+                console.error("Google API libraries not fully initialized yet for Drive operations.");
+                showAuthError("API Google non prête pour la sauvegarde. Veuillez patienter ou rafraîchir.");
+                return;
+            }
+
+            driveStatus.textContent = 'Sauvegarde sur Drive...';
+            hideAuthError();
+
+            try {
+                const folderId = await getAppFolderId();
+                const fileName = getCurrentUserJournalFileName();
+
+                const searchResponse = await gapi.client.drive.files.list({
+                    q: `'${folderId}' in parents and name='${fileName}' and trashed=false`,
+                    fields: 'files(id)',
+                    spaces: 'drive',
+                });
+
+                const existingFiles = searchResponse.result.files;
+                let fileId = null;
+                if (existingFiles.length > 0) {
+                    fileId = existingFiles[0].id;
+                }
+
+                const fileContent = JSON.stringify(journalEntries);
+                let metadata;
+                
+                if (fileId) {
+                    // For PATCH requests, don't include parents field
+                    metadata = {
+                        'name': fileName,
+                        'mimeType': 'application/json'
+                    };
+                } else {
+                    // For POST requests, include parents field
+                    metadata = {
+                        'name': fileName,
+                        'mimeType': 'application/json',
+                        'parents': [folderId]
+                    };
+                }
+
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                form.append('file', new Blob([fileContent], { type: 'application/json' }));
+
+                if (fileId) {
+                    const patchResponse = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${googleAccessToken}`
+                        },
+                        body: form
+                    });
+                    if (patchResponse.ok) {
+                        driveStatus.textContent = `The Journal is Saved in the Drive  at (${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })})`;
+                        console.log("Journal saved to Google Drive.");
+                    } else {
+                        const errorText = await patchResponse.text();
+                        console.error('Erreur lors de la sauvegarde (PATCH):', errorText);
+                        showAuthError('Échec de la sauvegarde du journal sur Google Drive. Permissions ou accès refusé.');
+                        driveStatus.textContent = 'Sauvegarde échouée.';
+                    }
+                } else {
+                    const postResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${googleAccessToken}`
+                        },
+                        body: form
+                    });
+                    if (postResponse.ok) {
+                        driveStatus.textContent = `Journal créé et sauvegardé sur Drive ! (${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })})`;
+                        console.log("Journal created and saved to Google Drive.");
+                    } else {
+                        const errorText = await postResponse.text();
+                        console.error('Erreur lors de la création (POST):', errorText);
+                        showAuthError('Échec de la création du journal sur Google Drive. Permissions ou accès refusé.');
+                        driveStatus.textContent = 'Sauvegarde échouée.';
+                    }
+                }
+
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde du journal sur Drive:', error);
+                showAuthError('Échec de la sauvegarde du journal sur Google Drive. Vérifiez les permissions ou réessayez.');
+                driveStatus.textContent = 'Sauvegarde échouée.';
+            }
+        }
+
+        async function loadJournalFromDrive() { 
+            console.log("loadJournalFromDrive() called.");
+            if (!googleAccessToken) {
+                showAuthError('Veuillez vous connecter à Google Drive d\'abord.');
+                return;
+            }
+            if (!gapiInited || !gisInited) {
+                console.error("Google API libraries not fully initialized yet for Drive operations.");
+                showAuthError("API Google non prête pour le chargement. Veuillez patienter ou rafraîchir.");
+                return;
+            }
+
+            driveStatus.textContent = 'Loading from the Drive...';
+            hideAuthError();
+
+            try {
+                const folderId = await getAppFolderId();
+                const fileName = getCurrentUserJournalFileName();
+
+                console.log("Searching for file:", fileName, "in folder:", folderId);
+                const searchResponse = await gapi.client.drive.files.list({
+                    q: `'${folderId}' in parents and name='${fileName}' and trashed=false`,
+                    fields: 'files(id, name)',
+                    spaces: 'drive'
+                });
+
+                console.log("Search response:", searchResponse);
+                const existingFiles = searchResponse.result.files;
+                console.log("Found files:", existingFiles);
+                
+                if (existingFiles && existingFiles.length > 0) {
+                    const fileId = existingFiles[0].id;
+                    console.log("Found file ID:", fileId);
+                    const response = await gapi.client.drive.files.get({
+                        fileId: fileId,
+                        alt: 'media'
+                    });
+
+                    if (response.status === 200) {
+                        const loadedData = response.result;
+                        if (loadedData) {
+                            journalEntries = loadedData;
+                            saveJournalEntriesLocallyOnly();
+                            applyFiltersAndSort();
+                            updatePerformanceGoalDisplay();
+                            driveStatus.textContent = `Journal loaded from Google Drive at (${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })})`;
+                            console.log("Journal loaded from Google Drive:", journalEntries);
+                        } else {
+                            console.error('No data in response');
+                            showAuthError('Le journal est vide sur Google Drive.');
+                            driveStatus.textContent = 'Chargement échoué - Fichier vide';
+                        }
+                    } else {
+                        console.error('Échec du téléchargement du fichier depuis Drive:', response.status);
+                        showAuthError('Échec du chargement du journal depuis Google Drive.');
+                        driveStatus.textContent = 'Chargement échoué.';
+                    }
+                } else {
+                    driveStatus.textContent = 'No journal files found on Drive. Starting from scratch.';
+                    journalEntries = []; 
+                    saveJournalEntriesLocallyOnly(); 
+                    applyFiltersAndSort();
+                    updatePerformanceGoalDisplay();
+                    console.log("No journal file found in Google Drive. Initializing empty journal.");
+                }
+            } catch (error) {
+                console.error('Error loading the journal from Google Drive:', error);
+                showAuthError('Failed to load the journal from Google Drive. Please try again.');
+                driveStatus.textContent = 'Loading failed.';
+            }
+        }
+
+        function saveJournalEntriesLocallyOnly() {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(journalEntries));
+            console.log("Journal saved locally.");
+        }
+
+        function loadJournalEntriesLocallyOnly() {
+            const storedEntries = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (storedEntries) {
+                journalEntries = JSON.parse(storedEntries);
+                journalEntries.forEach(entry => {
+                    if (typeof entry.timestamp === 'string') {
+                        entry.timestamp = new Date(entry.timestamp);
+                    }
+                });
+            }
+            console.log("Journal loaded locally.");
+        }
+
+        function saveJournalEntries() { 
+            saveJournalEntriesLocallyOnly();
+            if (googleAccessToken) {
+                if (!googleUserId) {
+                    fetchUserInfo().then(() => {
+                        saveJournalToDrive();
+                    });
+                } else {
+                    saveJournalToDrive();
+                }
+            }
+        }
+
+        function loadJournalEntries() {
+            if (googleAccessToken) {
+                loadJournalFromDrive();
+            } else {
+                loadJournalEntriesLocallyOnly();
+            }
+        }
+
+        // --- Position Size Calculator Functions ---
+        function updateSLInputVisibility() {
+            console.log("updateSLInputVisibility called");
+            const stopLossMethod = document.getElementById('stopLossInputMethod')?.value;
+            // CORRECTED: Use the correct IDs from your HTML
+            const pipsInputSection = document.getElementById('pipsDirectInputContainer');
+            const priceInputSection = document.getElementById('priceBasedInputContainer');
+            
+            console.log("Method:", stopLossMethod);
+            console.log("Pips section:", pipsInputSection);
+            console.log("Price section:", priceInputSection);
+
+            if (!stopLossMethod || !pipsInputSection || !priceInputSection) {
+                console.error('Some required elements for SL input visibility are missing');
+                return;
+            }
+
+            if (stopLossMethod === 'pips_direct') {
+                pipsInputSection.style.display = 'block'; // Changed to 'block' for visibility
+                priceInputSection.style.display = 'none';
+                console.log("Showing pips input");
+            } else if (stopLossMethod === 'price_based') {
+                pipsInputSection.style.display = 'none';
+                priceInputSection.style.display = 'block'; // Changed to 'block' for visibility
+                console.log("Showing price input");
+            }
+
+            // Clear inputs when switching methods
+            if (stopLossMethod === 'pips_direct') {
+                document.getElementById('entryPrice').value = '';
+                document.getElementById('stopLossPrice').value = '';
+                // Hide calculated pips display when switching to direct pips input
+                document.getElementById('calculatedPipsDisplay').style.display = 'none'; 
+            } else {
+                document.getElementById('stopLossPips').value = '';
+            }
+        }
+
+        function getPipDecimalValue(currencyPair) {
+            switch (currencyPair) {
+                case 'EURUSD': case 'GBPUSD': case 'AUDUSD': case 'NZDUSD': case 'USDCAD': case 'USDCHF': return 0.0001;
+                case 'USDJPY': case 'EURJPY': case 'GBPJPY': return 0.01;
+                case 'XAUUSD': return 0.1;
+                case 'DAX40': case 'CAC40': case 'SP500': case 'NASDAQ100': return 1;
+                case 'custom': return 0.0001;
+                default: return 0.0001;
+            }
+        }
+
+        function calculatePositionSize() {
+            const capital = parseFloat(document.getElementById('capital').value);
+            const riskPercentage = parseFloat(document.getElementById('riskPercentage').value);
+            const currencyPair = document.getElementById('currencyPair').value;
+            const stopLossInputMethod = document.getElementById('stopLossInputMethod').value;
+            
+            let stopLossPips;
+            let calcErrorMessage = null;
+
+            if (stopLossInputMethod === 'pips_direct') {
+                stopLossPips = parseFloat(document.getElementById('stopLossPips').value);
+                if (isNaN(stopLossPips) || stopLossPips <= 0) {
+                    calcErrorMessage = "Veuillez entrer une valeur valide pour le Stop Loss (en Pips) (> 0).";
+                }
+                document.getElementById('calculatedPipsDisplay').style.display = 'none';
+            } else { // price_based
+                const entryPrice = parseFloat(document.getElementById('entryPrice').value);
+                const stopLossPrice = parseFloat(document.getElementById('stopLossPrice').value);
+                const pipDecimalValue = getPipDecimalValue(currencyPair);
+
+                if (isNaN(entryPrice) || isNaN(stopLossPrice) || entryPrice <= 0 || stopLossPrice <= 0) {
+                    calcErrorMessage = "Veuillez entrer un Prix d'Entrée et un Prix de Stop Loss valides (> 0).";
+                } else if (pipDecimalValue <= 0) {
+                    calcErrorMessage = "Valeur décimale de Pip invalide pour l'actif sélectionné.";
+                } else {
+                    let priceDifference = Math.abs(entryPrice - stopLossPrice);
+                    stopLossPips = priceDifference / pipDecimalValue;
+                    document.getElementById('calculatedPips').textContent = stopLossPips.toFixed(2);
+                    document.getElementById('calculatedPipsDisplay').style.display = 'block';
+                }
+            }
+
+            const calcErrorMessageDiv = document.getElementById('calcErrorMessage');
+            const resultBox = document.getElementById('resultBox');
+
+            calcErrorMessageDiv.classList.remove('show');
+            resultBox.classList.remove('show');
+
+            if (isNaN(capital) || capital <= 0) {
+                calcErrorMessage = calcErrorMessage || "Veuillez entrer un Capital de Compte valide (> 0).";
+            }
+            if (isNaN(riskPercentage) || riskPercentage <= 0 || riskPercentage > 100) {
+                calcErrorMessage = calcErrorMessage || "Veuillez entrer un Pourcentage de Risque valide (entre 0.1 et 100).";
+            }
+            if (isNaN(stopLossPips) || stopLossPips <= 0) {
+                    calcErrorMessage = calcErrorMessage || "Le Stop Loss en Pips n'a pas pu être déterminé. Veuillez vérifier vos entrées.";
+            }
+
+            if (calcErrorMessage) {
+                calcErrorMessageDiv.textContent = calcErrorMessage;
+                calcErrorMessageDiv.classList.add('show');
+                resultBox.style.display = 'none';
+                document.getElementById('calculatedPipsDisplay').style.display = 'none';
+                return;
+            }
+
+            let pipValuePerStandardLot;
+            switch (currencyPair) {
+                case 'EURUSD': case 'GBPUSD': case 'AUDUSD': case 'NZDUSD': pipValuePerStandardLot = 10; break;
+                case 'USDJPY': case 'EURJPY': case 'GBPJPY': pipValuePerStandardLot = 8.5; break; 
+                case 'XAUUSD': pipValuePerStandardLot = 10; break; 
+                case 'DAX40': case 'SP500': case 'NASDAQ100': case 'CAC40': pipValuePerStandardLot = 1; break;
+                case 'custom':
+                    pipValuePerStandardLot = parseFloat(document.getElementById('customPipValue').value);
+                    if (isNaN(pipValuePerStandardLot) || pipValuePerStandardLot <= 0) {
+                        calcErrorMessageDiv.textContent = "Veuillez entrer une Valeur de Pip/Point par Lot Standard personnalisée valide (> 0).";
+                        calcErrorMessageDiv.classList.add('show');
+                        resultBox.style.display = 'none';
+                        document.getElementById('calculatedPipsDisplay').style.display = 'none';
+                        return;
+                    }
+                    break;
+                default: pipValuePerStandardLot = 10; 
+            }
+
+            const amountToRisk = (capital * riskPercentage) / 100;
+            const lotSize = amountToRisk / (stopLossPips * pipValuePerStandardLot);
+
+            document.getElementById('lotSize').textContent = lotSize.toFixed(2);
+            document.getElementById('pipValueDisplay').textContent = pipValuePerStandardLot.toFixed(2);
+            document.getElementById('amountRisqued').textContent = amountToRisk.toFixed(2);
+            resultBox.classList.add('show');
+        }
+
+        // --- Journal related functions ---
+        function addUpdateJournalEntry(isDraft = false) { 
+            if (editingEntryIndex === -1) {
+                addJournalEntry(isDraft);
+            } else {
+                updateJournalEntry(isDraft);
+            }
+        }
+
+        function addJournalEntry(isDraft = false) { 
+            const journalErrorMessageDiv = document.getElementById('journalErrorMessage');
+            const newEntry = getJournalFormData(isDraft);
+
+            if (!newEntry) {
+                journalErrorMessageDiv.classList.add('show');
+                return;
+            }
+
+            journalErrorMessageDiv.classList.remove('show');
+
+            newEntry.timestamp = new Date().toISOString();
+            newEntry.is_draft = isDraft;
+            journalEntries.unshift(newEntry);
+            saveJournalEntries(); 
+            applyFiltersAndSort();
+            updatePerformanceGoalDisplay();
+            document.getElementById('journalForm').reset();
+        }
+
+        function updateJournalEntry(isDraft = false) { 
+            const journalErrorMessageDiv = document.getElementById('journalErrorMessage');
+            const updatedEntry = getJournalFormData(isDraft);
+
+            if (!updatedEntry) {
+                journalErrorMessageDiv.classList.add('show');
+                return;
+            }
+
+            journalErrorMessageDiv.classList.remove('show');
+
+            if (editingEntryIndex !== -1 && journalEntries[editingEntryIndex]) {
+                journalEntries[editingEntryIndex] = {
+                    ...updatedEntry,
+                    timestamp: journalEntries[editingEntryIndex].timestamp,
+                    is_draft: isDraft
+                };
+                saveJournalEntries(); 
+                applyFiltersAndSort();
+                updatePerformanceGoalDisplay();
+            } else {
+                journalErrorMessageDiv.textContent = "Erreur lors de la mise à jour de l'entrée.";
+                journalErrorMessageDiv.classList.add('show');
+            }
+            resetJournalForm();
+        }
+
+        function getJournalFormData(isDraft = false) { 
+            const journalDate = document.getElementById('journalDate').value;
+            const journalAssetSelect = document.getElementById('journalAssetSelect');
+            const journalAssetCustomInput = document.getElementById('journalAssetCustom');
+            let journalAsset;
+
+            if (journalAssetSelect.value === 'other') {
+                journalAsset = journalAssetCustomInput.value;
+            } else {
+                journalAsset = journalAssetSelect.value;
+            }
+
+            const journalTradeType = document.getElementById('journalTradeType').value;
+            const journalSetup = document.getElementById('journalSetup').value;
+            const journalEntryPrice = parseFloat(document.getElementById('journalEntryPrice').value);
+            const journalSL = parseFloat(document.getElementById('journalSL').value);
+            const journalTP = parseFloat(document.getElementById('journalTP').value);
+            const journalRRR = document.getElementById('journalRRR').value;
+            const journalPositionSize = parseFloat(document.getElementById('journalPositionSize').value);
+            const journalResultEuro = parseFloat(document.getElementById('journalResultEuro').value);
+            const journalResultPercentage = parseFloat(document.getElementById('journalResultPercentage').value);
+            const journalComment = document.getElementById('journalComment').value;
+            const journalErrorMessageDiv = document.getElementById('journalErrorMessage');
+
+            if (!journalDate || !journalAsset || isNaN(journalEntryPrice) || isNaN(journalSL) || isNaN(journalTP) || isNaN(journalPositionSize) || (!isDraft && (isNaN(journalResultEuro) || isNaN(journalResultPercentage)))) {
+                journalErrorMessageDiv.textContent = "Veuillez remplir tous les champs obligatoires du journal (Date, Actif, Entrée, SL, TP, Taille de position). Les résultats sont facultatifs pour les brouillons.";
+                return null;
+            }
+            return {
+                date: journalDate,
+                asset: journalAsset,
+                tradeType: journalTradeType,
+                setup: journalSetup,
+                entryPrice: journalEntryPrice,
+                stopLoss: journalSL,
+                takeProfit: journalTP,
+                rrr: journalRRR,
+                positionSize: journalPositionSize,
+                resultEuro: isDraft && isNaN(journalResultEuro) ? 0 : journalResultEuro,
+                resultPercentage: isDraft && isNaN(journalResultPercentage) ? 0 : journalResultPercentage,
+                comment: journalComment
+            };
+        }
+
+        function editJournalEntry(index) { 
+            const entry = journalEntries[index];
+            document.getElementById('journalDate').value = entry.date;
+            
+            const journalAssetSelect = document.getElementById('journalAssetSelect');
+            const journalAssetCustomInput = document.getElementById('journalAssetCustom');
+            const assetOptions = Array.from(journalAssetSelect.options).map(option => option.value);
+
+            if (assetOptions.includes(entry.asset)) {
+                journalAssetSelect.value = entry.asset;
+                journalAssetCustomInput.style.display = 'none';
+                journalAssetCustomInput.removeAttribute('required');
+            } else {
+                journalAssetSelect.value = 'other';
+                journalAssetCustomInput.value = entry.asset;
+                journalAssetCustomInput.style.display = 'block';
+                journalAssetCustomInput.setAttribute('required', 'required');
+            }
+
+            document.getElementById('journalTradeType').value = entry.tradeType;
+            document.getElementById('journalSetup').value = entry.setup;
+            document.getElementById('journalEntryPrice').value = entry.entryPrice;
+            document.getElementById('journalSL').value = entry.stopLoss;
+            document.getElementById('journalTP').value = entry.takeProfit;
+            document.getElementById('journalRRR').value = entry.rrr;
+            document.getElementById('journalPositionSize').value = entry.positionSize;
+            document.getElementById('journalResultEuro').value = entry.resultEuro || ''; 
+            document.getElementById('journalResultPercentage').value = entry.resultPercentage || '';
+            document.getElementById('journalComment').value = entry.comment;
+
+            editingEntryIndex = index;
+            document.getElementById('addUpdateJournalBtn').textContent = 'Mettre à jour le Journal';
+            document.getElementById('addUpdateJournalBtn').classList.remove('btn-secondary');
+            document.getElementById('addUpdateJournalBtn').classList.add('btn-info');
+            document.getElementById('cancelEditBtn').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelEdit() { 
+            document.getElementById('journalForm').reset();
+            document.getElementById('journalAssetCustom').style.display = 'none';
+            document.getElementById('journalAssetCustom').removeAttribute('required');
+            editingEntryIndex = -1;
+            document.getElementById('addUpdateJournalBtn').textContent = 'Ajouter au Journal';
+            document.getElementById('addUpdateJournalBtn').classList.remove('btn-info');
+            document.getElementById('addUpdateJournalBtn').classList.add('btn-secondary');
+            document.getElementById('saveDraftBtn').style.display = 'block'; 
+            document.getElementById('cancelEditBtn').style.display = 'none';
+            document.getElementById('journalErrorMessage').classList.remove('show');
+        }
+
+        function resetJournalForm() { 
+            document.getElementById('journalForm').reset();
+            document.getElementById('journalAssetCustom').style.display = 'none';
+            document.getElementById('journalAssetCustom').removeAttribute('required');
+            editingEntryIndex = -1;
+            document.getElementById('addUpdateJournalBtn').textContent = 'Add to Journal';
+            document.getElementById('addUpdateJournalBtn').classList.remove('btn-info');
+            document.getElementById('addUpdateJournalBtn').classList.add('btn-secondary');
+            document.getElementById('saveDraftBtn').style.display = 'block';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+            document.getElementById('journalErrorMessage').classList.remove('show');
+        }
+
+        function deleteJournalEntry(index) {
+            showCustomConfirm('Êtes-vous sûr de vouloir supprimer cette entrée de journal ?', () => {
+                journalEntries.splice(index, 1);
+                saveJournalEntries(); 
+                applyFiltersAndSort();
+                updatePerformanceGoalDisplay();
+                resetJournalForm();
+            });
+        }
+
+        function applyFiltersAndSort() { 
+            let filteredEntries = [...journalEntries];
+
+            const filterAssetSelect = document.getElementById('filterAssetSelect');
+            const filterAssetCustomInput = document.getElementById('filterAssetCustom');
+            let filterAssetValue = '';
+            if (filterAssetSelect.value === 'other') {
+                filterAssetValue = filterAssetCustomInput.value.toLowerCase();
+            } else {
+                filterAssetValue = filterAssetSelect.value.toLowerCase();
+            }
+
+            const filterTradeType = document.getElementById('filterTradeType').value;
+
+            if (filterAssetValue) {
+                filteredEntries = filteredEntries.filter(entry => 
+                    entry.asset.toLowerCase().includes(filterAssetValue)
+                );
+            }
+            if (filterTradeType) {
+                filteredEntries = filteredEntries.filter(entry => 
+                    entry.tradeType === filterTradeType
+                );
+            }
+
+            const sortBy = document.getElementById('sortBy').value;
+            const sortOrder = document.getElementById('sortOrder').value;
+
+            filteredEntries.sort((a, b) => {
+                let valA, valB;
+
+                if (sortBy === 'timestamp') {
+                    valA = new Date(a.timestamp).getTime();
+                    valB = new Date(b.timestamp).getTime();
+                } else if (sortBy === 'resultEuro' || sortBy === 'resultPercentage') {
+                    valA = a[sortBy];
+                    valB = b[sortBy];
+                } else { // 'asset'
+                    valA = a[sortBy].toLowerCase();
+                    valB = b[sortBy].toLowerCase();
+                }
+
+                if (sortOrder === 'asc') {
+                    if (valA < valB) return -1;
+                    if (valA > valB) return 1;
+                } else { // 'desc'
+                    if (valA > valB) return -1;
+                    if (valA < valB) return 1;
+                }
+                return 0;
+            });
+
+            renderFilteredJournalEntries(filteredEntries);
+            updatePerformanceMetrics(filteredEntries);
+            updateDetailedPerformanceMetrics(filteredEntries);
+        }
+
+        function resetFiltersAndSort() { 
+            document.getElementById('filterAssetSelect').value = '';
+            document.getElementById('filterAssetCustom').value = '';
+            document.getElementById('filterAssetCustom').style.display = 'none';
+            document.getElementById('filterAssetCustom').removeAttribute('required');
+            document.getElementById('filterTradeType').value = '';
+            document.getElementById('sortBy').value = 'timestamp';
+            document.getElementById('sortOrder').value = 'desc';
+            applyFiltersAndSort();
+        }
+
+        function renderFilteredJournalEntries(entriesToRender) { 
+            const journalEntriesContainer = document.getElementById('journalEntriesContainer');
+            const noEntriesMessage = document.getElementById('noEntriesMessage'); 
+
+            journalEntriesContainer.innerHTML = '';
+
+            if (entriesToRender.length > 0) {
+                noEntriesMessage.style.display = 'none';
+            } else {
+                noEntriesMessage.style.display = 'block';
+            }
+            
+            entriesToRender.forEach((entry, idx) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'journal-entry';
+                
+                const resultClass = entry.resultEuro >= 0 ? 'result-positive' : 'result-negative';
+                const draftIndicator = entry.is_draft ? '<span class="text-yellow-500 font-bold ml-2">(Brouillon)</span>' : '';
+
+                entryDiv.innerHTML = `
+                    <p><span class="label">Date:</span> <span class="value">${entry.date}</span></p>
+                    <p><span class="label">Actif:</span> <span class="value">${entry.asset}</span> - <span class="value">${entry.tradeType}</span>${draftIndicator}</p>
+                    <p><span class="label">Setup:</span> <span class="value">${entry.setup || 'N/A'}</span></p>
+                    <p><span class="label">Entrée:</span> <span class="value">${entry.entryPrice}</span> | <span class="label">SL:</span> <span class="value">${entry.stopLoss}</span> | <span class="label">TP:</span> <span class="value">${entry.takeProfit}</span> | <span class="label">RRR:</span> <span class="value">${entry.rrr || 'N/A'}</span></p>
+                    <p><span class="label">Taille de position:</span> <span class="value">${entry.positionSize} lots</span></p>
+                    <p class="text-lg font-bold ${resultClass}">Résultat: ${entry.resultEuro.toFixed(2)} € (${entry.resultPercentage.toFixed(2)}%)</p>
+                    <p><span class="label">Commentaire:</span> <span class="value">${entry.comment || 'Aucun'}</span></p>
+                    <div class="journal-actions">
+                        <button onclick="editJournalEntry(${journalEntries.indexOf(entry)})" class="btn-info">Modifier</button>
+                        <button onclick="deleteJournalEntry(${journalEntries.indexOf(entry)})" class="btn-danger">Supprimer</button>
+                    </div>
+                `;
+                journalEntriesContainer.appendChild(entryDiv);
+            });
+        }
+
+        // --- Global Performance Statistics Functions ---
+        function updatePerformanceMetrics(entriesToCalculate) { 
+            const nonDraftEntries = entriesToCalculate.filter(entry => !entry.is_draft);
+
+            const totalTrades = nonDraftEntries.length;
+            let winningTrades = 0;
+            let losingTrades = 0;
+            let totalPnL = 0;
+            let totalPnLPercentage = 0;
+            let largestWin = 0;
+            let largestLoss = 0; 
+
+            nonDraftEntries.forEach(entry => {
+                const resultEuro = entry.resultEuro;
+                const resultPercentage = entry.resultPercentage;
+
+                if (resultEuro > 0) {
+                    winningTrades++;
+                    if (resultEuro > largestWin) {
+                        largestWin = resultEuro;
+                    }
+                } else if (resultEuro < 0) {
+                    losingTrades++;
+                    if (resultEuro < largestLoss) { 
+                        largestLoss = resultEuro;
+                    }
+                }
+                totalPnL += resultEuro;
+                totalPnLPercentage += resultPercentage;
+            });
+
+            const winRate = totalTrades > 0 ? (winningTrades / totalTrades * 100).toFixed(2) : '0.00';
+            const avgPnL = totalTrades > 0 ? (totalPnL / totalTrades).toFixed(2) : '0.00';
+
+            document.getElementById('totalTrades').textContent = totalTrades;
+            document.getElementById('winningTrades').textContent = winningTrades;
+            document.getElementById('losingTrades').textContent = losingTrades;
+            document.getElementById('winRate').textContent = `${winRate}%`;
+            document.getElementById('totalPnL').textContent = `${totalPnL.toFixed(2)} €`;
+            document.getElementById('totalPnLPercentage').textContent = `${totalPnLPercentage.toFixed(2)}%`;
+            document.getElementById('avgPnL').textContent = `${avgPnL} €`;
+            document.getElementById('largestWin').textContent = `${largestWin.toFixed(2)} €`;
+            document.getElementById('largestLoss').textContent = `${largestLoss.toFixed(2)} €`;
+
+            const totalPnLMetric = document.getElementById('totalPnLMetric');
+            const totalPnLPercentageMetric = document.getElementById('totalPnLPercentageMetric');
+            const avgPnLMetric = document.getElementById('avgPnLMetric');
+
+            totalPnLMetric.classList.toggle('positive', totalPnL > 0);
+            totalPnLMetric.classList.toggle('negative', totalPnL < 0);
+            totalPnLPercentageMetric.classList.toggle('positive', totalPnLPercentage > 0);
+            totalPnLPercentageMetric.classList.toggle('negative', totalPnLPercentage < 0);
+            avgPnLMetric.classList.toggle('positive', parseFloat(avgPnL) > 0);
+            avgPnLMetric.classList.toggle('negative', parseFloat(avgPnL) < 0);
+        }
+
+        function setPerformanceGoal() { 
+            const initialCap = parseFloat(document.getElementById('initialCapital').value);
+            const targetPnL = parseFloat(document.getElementById('targetPnLEuro').value);
+            const goalErrorMessageDiv = document.getElementById('goalTrackerErrorMessage');
+
+            goalErrorMessageDiv.classList.remove('show');
+
+            if (isNaN(initialCap) || initialCap <= 0) {
+                goalErrorMessageDiv.textContent = "Veuillez entrer un Capital Initial valide (> 0).";
+                goalErrorMessageDiv.classList.add('show');
+                return;
+            }
+            if (isNaN(targetPnL) || targetPnL <= 0) {
+                goalErrorMessageDiv.textContent = "Veuillez entrer un P&L Cible valide (> 0).";
+                goalErrorMessageDiv.classList.add('show');
+                return;
+            }
+
+            initialCapital = initialCap;
+            targetPnLEuro = targetPnL;
+            savePerformanceGoal();
+            updatePerformanceGoalDisplay();
+            goalErrorMessageDiv.classList.remove('show');
+        }
+
+        function updatePerformanceGoalDisplay() { 
+            const nonDraftEntries = journalEntries.filter(entry => !entry.is_draft);
+            const totalPnL = nonDraftEntries.reduce((sum, entry) => sum + entry.resultEuro, 0);
+            const progressPercentage = (totalPnL / targetPnLEuro * 100).toFixed(2);
+            
+            const currentGoalProgressElement = document.getElementById('currentGoalProgress');
+            const goalProgressBarElement = document.getElementById('goalProgressBar');
+            const goalProgressDisplayBox = document.getElementById('goalProgressDisplay');
+
+            currentGoalProgressElement.textContent = `${progressPercentage}%`;
+            
+            let progressBarWidth = Math.min(100, Math.max(0, progressPercentage));
+            goalProgressBarElement.style.width = `${progressBarWidth}%`;
+
+            goalProgressBarElement.classList.remove('achieved');
+            if (progressPercentage >= 100) {
+                goalProgressBarElement.classList.add('achieved');
+                goalProgressBarElement.textContent = 'Objectif Atteint !';
+            } else {
+                goalProgressBarElement.textContent = '';
+            }
+
+            goalProgressDisplayBox.classList.add('show');
+        }
+
+        function loadPerformanceGoal() { 
+            const storedGoal = localStorage.getItem(GOAL_STORAGE_KEY);
+            if (storedGoal) {
+                const goal = JSON.parse(storedGoal);
+                initialCapital = goal.initialCapital || 100;
+                targetPnLEuro = goal.targetPnLEuro || 1000;
+                document.getElementById('initialCapital').value = initialCapital;
+                document.getElementById('targetPnLEuro').value = targetPnLEuro;
+            }
+        }
+
+        function savePerformanceGoal() { 
+            const goal = {
+                initialCapital: initialCapital,
+                targetPnLEuro: targetPnLEuro
+            };
+            localStorage.setItem(GOAL_STORAGE_KEY, JSON.stringify(goal));
+        }
+
+        function updateTradingSessionStatus() { 
+            const now = new Date();
+            const utcHour = now.getUTCHours();
+            const utcMinute = now.getUTCMinutes();
+
+            const sessions = {
+                london: { start: 8, end: 16, elementId: 'londonStatus' },
+                newYork: { start: 13, end: 21, elementId: 'newYorkStatus' },
+                tokyo: { start: 0, end: 9, elementId: 'tokyoStatus' },
+                sydney: { start: 22, end: 7, elementId: 'sydneyStatus' }
+            };
+
+            for (const sessionName in sessions) {
+                const session = sessions[sessionName];
+                const statusElement = document.getElementById(session.elementId);
+                const parentSessionItem = statusElement ? statusElement.closest('.session-item') : null;
+                let isOpen = false;
+
+                if (session.start < session.end) {
+                    isOpen = (utcHour >= session.start && utcHour < session.end);
+                } else {
+                    isOpen = (utcHour >= session.start || utcHour < session.end);
+                }
+
+                if (parentSessionItem) {
+                    parentSessionItem.classList.remove('open', 'closed');
+                    parentSessionItem.classList.add(isOpen ? 'open' : 'closed');
+                }
+            }
+        }
+
+        // --- Chart Related Functions ---
+        const currentTimeLinePlugin = {
+            id: 'currentTimeLine',
+            beforeDraw(chart, args, options) {
+                const { ctx, chartArea: { left, right, top, bottom }, scales: { x } } = chart;
+                const now = new Date();
+                const currentUTCHour = now.getUTCHours();
+                const currentUTCMinute = now.getUTCMinutes();
+                const currentTimeInHours = currentUTCHour + currentUTCMinute / 60;
+
+                const pixelX = x.getPixelForValue(currentTimeInHours);
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = options.lineColor || '#ef4444';
+                ctx.lineWidth = options.lineWidth || 2;
+                ctx.moveTo(pixelX, top);
+                ctx.lineTo(pixelX, bottom);
+                ctx.stroke();
+
+                ctx.fillStyle = options.labelColor || '#ef4444';
+                ctx.font = options.labelFont || '12px Inter';
+                ctx.textAlign = 'left';
+                ctx.fillText(`Actuel: ${currentUTCHour.toString().padStart(2, '0')}:${currentUTCMinute.toString().padStart(2, '0')} UTC`, pixelX + 5, top + 15);
+                ctx.restore();
+            }
+        };
+
+        function renderTradingSessionsChart() { 
+            const ctx = document.getElementById('tradingSessionsChartCanvas').getContext('2d');
+
+            const sessionsData = [
+                { name: 'London', start: 8, end: 16, color: 'rgba(127, 88, 175, 0.6)' }, 
+                { name: 'New York', start: 13, end: 21, color: 'rgba(246, 173, 85, 0.6)' }, 
+                { name: 'Tokyo', start: 0, end: 9, color: 'rgba(66, 153, 225, 0.6)' }, 
+                { name: 'Sydney', start: 22, end: 7, color: 'rgba(76, 175, 80, 0.6)' }
+            ];
+
+            const datasets = [];
+            const labels = [];
+
+            sessionsData.forEach(session => {
+                labels.push(session.name);
+                if (session.start > session.end) {
+                    datasets.push({
+                        label: session.name,
+                        backgroundColor: session.color,
+                        borderColor: session.color.replace('0.6', '1'),
+                        borderWidth: 1,
+                        data: [{ x: [session.start, 24], y: session.name }]
+                    });
+                    datasets.push({
+                        label: session.name,
+                        backgroundColor: session.color,
+                        borderColor: session.color.replace('0.6', '1'),
+                        borderWidth: 1,
+                        data: [{ x: [0, session.end], y: session.name }]
+                    });
+                } else {
+                    datasets.push({
+                        label: session.name,
+                        backgroundColor: session.color,
+                        borderColor: session.color.replace('0.6', '1'),
+                        borderWidth: 1,
+                        data: [{ x: [session.start, session.end], y: session.name }]
+                    });
+                }
+            });
+
+            if (tradingSessionsChartInstance) {
+                tradingSessionsChartInstance.data.labels = labels;
+                tradingSessionsChartInstance.data.datasets = datasets;
+                tradingSessionsChartInstance.update();
+            } else {
+                tradingSessionsChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: datasets
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: false },
+                            legend: { display: false },
+                            currentTimeLine: { 
+                                lineColor: '#ef4444', 
+                                lineWidth: 2,
+                                labelColor: '#ef4444',
+                                labelFont: '12px Inter'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                min: 0,
+                                max: 24,
+                                ticks: {
+                                    stepSize: 3,
+                                    callback: function(value) {
+                                        return value + 'h';
+                                    }
+                                },
+                                title: { display: true, text: 'Heure (UTC)' }
+                            },
+                            y: {
+                                title: { display: true, text: 'Session' }
+                            }
+                        }
+                    },
+                    plugins: [currentTimeLinePlugin] 
+                });
+            }
+        }
+
+        function updateDetailedPerformanceMetrics(entriesToCalculate) { 
+            const nonDraftEntries = entriesToCalculate.filter(entry => !entry.is_draft);
+
+            const performanceByAsset = {};
+            const performanceByTradeType = {};
+
+            nonDraftEntries.forEach(entry => {
+                const asset = entry.asset.toUpperCase();
+                if (!performanceByAsset[asset]) {
+                    performanceByAsset[asset] = { totalTrades: 0, winningTrades: 0, totalPnL: 0, totalPnLPercentage: 0 };
+                }
+                performanceByAsset[asset].totalTrades++;
+                if (entry.resultEuro > 0) {
+                    performanceByAsset[asset].winningTrades++;
+                }
+                performanceByAsset[asset].totalPnL += entry.resultEuro;
+                performanceByAsset[asset].totalPnLPercentage += entry.resultPercentage;
+
+                const tradeType = entry.tradeType;
+                if (!performanceByTradeType[tradeType]) {
+                    performanceByTradeType[tradeType] = { totalTrades: 0, winningTrades: 0, totalPnL: 0, totalPnLPercentage: 0 };
+                }
+                performanceByTradeType[tradeType].totalTrades++;
+                if (entry.resultEuro > 0) {
+                    performanceByTradeType[tradeType].winningTrades++;
+                }
+                performanceByTradeType[tradeType].totalPnL += entry.resultEuro;
+                performanceByTradeType[tradeType].totalPnLPercentage += entry.resultPercentage;
+            });
+
+            const assetContainer = document.getElementById('performanceByAssetTable');
+            assetContainer.innerHTML = '';
+            if (Object.keys(performanceByAsset).length === 0) {
+                assetContainer.innerHTML = '<p class="text-center text-gray-600">Aucune donnée d\'actif disponible.</p>';
+            } else {
+                let assetTableHTML = `<table class="w-full"><thead><tr><th>Actif</th><th>Trades</th><th>P&L (€)</th><th>Win Rate</th></tr></thead><tbody>`;
+                for (const asset in performanceByAsset) {
+                    const stats = performanceByAsset[asset];
+                    const winRate = stats.totalTrades > 0 ? (stats.winningTrades / stats.totalTrades * 100).toFixed(2) : '0.00';
+                    const pnLClass = stats.totalPnL >= 0 ? 'positive-text' : 'negative-text';
+                    assetTableHTML += `<tr><td>${asset}</td><td>${stats.totalTrades}</td><td class="${pnLClass}">${stats.totalPnL.toFixed(2)} €</td><td>${winRate}%</td></tr>`;
+                }
+                assetTableHTML += `</tbody></table>`;
+                assetContainer.innerHTML = assetTableHTML;
+            }
+
+            const tradeTypeContainer = document.getElementById('performanceByTradeTypeTable');
+            tradeTypeContainer.innerHTML = '';
+            if (Object.keys(performanceByTradeType).length === 0) {
+                tradeTypeContainer.innerHTML = '<p class="text-center text-gray-600">Aucune donnée de type de trade disponible.</p>';
+            } else {
+                let tradeTypeTableHTML = `<table class="w-full"><thead><tr><th>Type</th><th>Trades</th><th>P&L (€)</th><th>Win Rate</th></tr></thead><tbody>`;
+                for (const type in performanceByTradeType) {
+                    const stats = performanceByTradeType[type];
+                    const winRate = stats.totalTrades > 0 ? (stats.winningTrades / stats.totalTrades * 100).toFixed(2) : '0.00';
+                    const pnLClass = stats.totalPnL >= 0 ? 'positive-text' : 'negative-text';
+                    tradeTypeTableHTML += `<tr><td>${type}</td><td>${stats.totalTrades}</td><td class="${pnLClass}">${stats.totalPnL.toFixed(2)} €</td><td>${winRate}%</td></tr>`;
+                }
+                tradeTypeTableHTML += `</tbody></table>`;
+                tradeTypeContainer.innerHTML = tradeTypeTableHTML;
+            }
+
+            renderEquityCurveChart(nonDraftEntries);
+            renderAssetPerformanceChart(performanceByAsset);
+            renderTradeTypePerformanceChart(performanceByTradeType);
+        }
+
+        function renderEquityCurveChart(entries) { 
+            const ctx = document.getElementById('equityCurveChart').getContext('2d');
+            const sortedEntries = [...entries].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const labels = [];
+            const cumulativePnL = [];
+            let currentPnL = 0;
+
+            sortedEntries.forEach(entry => {
+                labels.push(entry.date);
+                currentPnL += entry.resultEuro;
+                cumulativePnL.push(currentPnL);
+            });
+
+            if (equityCurveChartInstance) {
+                equityCurveChartInstance.data.labels = labels;
+                equityCurveChartInstance.data.datasets[0].data = cumulativePnL;
+                equityCurveChartInstance.update();
+            } else {
+                equityCurveChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'P&L cumulatif (€)',
+                            data: cumulativePnL,
+                            borderColor: '#7f58af',
+                            backgroundColor: 'rgba(127, 88, 175, 0.2)',
+                            fill: true,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: false },
+                            legend: { display: true, position: 'top' }
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'Date' } },
+                            y: { title: { display: true, text: 'P&L (€)' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function renderAssetPerformanceChart(data) { 
+            const ctx = document.getElementById('assetPerformanceChart').getContext('2d');
+            const labels = Object.keys(data);
+            const pnLValues = labels.map(label => data[label].totalPnL);
+            const backgroundColors = pnLValues.map(value => value >= 0 ? '#48bb78' : '#f56565');
+
+            if (assetPerformanceChartInstance) {
+                assetPerformanceChartInstance.data.labels = labels;
+                assetPerformanceChartInstance.data.datasets[0].data = pnLValues;
+                assetPerformanceChartInstance.data.datasets[0].backgroundColor = backgroundColors;
+                assetPerformanceChartInstance.data.datasets[0].borderColor = backgroundColors;
+                assetPerformanceChartInstance.update();
+            } else {
+                assetPerformanceChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Total P&L (€)',
+                            data: pnLValues,
+                            backgroundColor: backgroundColors,
+                            borderColor: backgroundColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: false },
+                            legend: { display: false },
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'Actif' } },
+                            y: { title: { display: true, text: 'P&L (€)' }, beginAtZero: true }
+                        }
+                    }
+                });
+            }
+        }
+
+        function renderTradeTypePerformanceChart(data) { 
+            const ctx = document.getElementById('tradeTypePerformanceChart').getContext('2d');
+            const labels = Object.keys(data);
+            const pnLValues = labels.map(label => data[label].totalPnL);
+            const backgroundColors = [
+                '#7f58af',
+                '#f6ad55',
+                '#a0aec0'
+            ];
+
+            if (tradeTypePerformanceChartInstance) {
+                tradeTypePerformanceChartInstance.data.labels = labels;
+                tradeTypePerformanceChartInstance.data.datasets[0].data = pnLValues;
+                tradeTypePerformanceChartInstance.data.datasets[0].backgroundColor = backgroundColors;
+                tradeTypePerformanceChartInstance.update();
+            } else {
+                tradeTypePerformanceChartInstance = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Total P&L (€)',
+                            data: pnLValues,
+                            backgroundColor: backgroundColors,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: false },
+                            legend: { display: true, position: 'right' }
+                        }
+                    }
+                });
+            }
+        }
+
+        function showTab(tabName) { 
+            document.querySelectorAll('.tab-content').forEach(tabContent => {
+                tabContent.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(tabButton => {
+                tabButton.classList.remove('active');
+            });
+
+            document.getElementById(tabName).classList.add('active');
+            document.getElementById(tabName + 'Button').classList.add('active');
+
+            if (tabName === 'equityCurveTab' && equityCurveChartInstance) {
+                equityCurveChartInstance.update();
+            } else if (tabName === 'assetChartTab' && assetPerformanceChartInstance) {
+                assetPerformanceChartInstance.update();
+            } else if (tabName === 'tradeTypeChartTab' && tradeTypePerformanceChartInstance) {
+                tradeTypePerformanceChartInstance.update();
+            }
+        }
+        
+        // --- Calculator helper functions ---
+        // This function was duplicated and had incorrect IDs, removed the duplicate from here.
+        // The one above (line ~550) is the correct one to modify.
+
+
+        // --- Custom confirmation modal ---
+        function showCustomConfirm(message, onConfirm) {
+            const modalId = 'customConfirmModal';
+            let modal = document.getElementById(modalId);
+
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = modalId;
+                modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50';
+                modal.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+                        <p class="text-lg font-semibold text-gray-800 mb-4" id="customConfirmMessage"></p>
+                        <div class="flex justify-end space-x-3">
+                            <button id="confirmCancelBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition">Annuler</button>
+                            <button id="confirmOkBtn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">Confirmer</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            document.getElementById('customConfirmMessage').textContent = message;
+            modal.style.display = 'flex';
+
+            const confirmOkBtn = document.getElementById('confirmOkBtn');
+            const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+
+            const newConfirmOkBtn = confirmOkBtn.cloneNode(true);
+            confirmOkBtn.parentNode.replaceChild(newConfirmOkBtn, confirmOkBtn);
+            const newConfirmCancelBtn = confirmCancelBtn.cloneNode(true);
+            confirmCancelBtn.parentNode.replaceChild(newConfirmCancelBtn, confirmCancelBtn);
+
+            newConfirmOkBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+                if (onConfirm) {
+                    onConfirm();
+                }
+            });
+
+            newConfirmCancelBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+        }
+
+        // --- DOM Content Loaded Listener ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Retrieve element references AFTER DOM is loaded
+            authorizeButton = document.getElementById('authorizeButton');
+            signoutButton = document.getElementById('signoutButton');
+            saveToDriveButton = document.getElementById('saveToDriveButton');
+            loadFromDriveButton = document.getElementById('loadFromDriveButton');
+            userNameDisplay = document.getElementById('userNameDisplay');
+            driveStatus = document.getElementById('driveStatus');
+            authErrorMessage = document.getElementById('authErrorMessage');
+
+            // --- Position Size Calculator Logic ---
+            const currencyPairSelect = document.getElementById('currencyPair');
+            const customPipValueContainer = document.getElementById('customPipValueContainer');
+            if (currencyPairSelect.value === 'custom') {
+                customPipValueContainer.style.display = 'block';
+            }
+            currencyPairSelect.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customPipValueContainer.style.display = 'block';
+                } else {
+                    customPipValueContainer.style.display = 'none';
+                }
+            });
+            // Attach SL input visibility listener directly in DOMContentLoaded
+            const stopLossInputMethodSelect = document.getElementById('stopLossInputMethod');
+            if (stopLossInputMethodSelect) { // Defensive check
+                stopLossInputMethodSelect.addEventListener('change', updateSLInputVisibility);
+            }
+            updateSLInputVisibility(); // Initial call to set correct visibility for calculator
+
+            // Journal Asset custom input toggle
+            const journalAssetSelect = document.getElementById('journalAssetSelect');
+            const journalAssetCustomInput = document.getElementById('journalAssetCustom');
+            journalAssetSelect.addEventListener('change', function() {
+                if (this.value === 'other') {
+                    journalAssetCustomInput.style.display = 'block';
+                    journalAssetCustomInput.setAttribute('required', 'required');
+                } else {
+                    journalAssetCustomInput.style.display = 'none';
+                    journalAssetCustomInput.removeAttribute('required');
+                }
+            });
+
+            // Filter Asset custom input toggle
+            const filterAssetSelect = document.getElementById('filterAssetSelect');
+            const filterAssetCustomInput = document.getElementById('filterAssetCustom');
+            filterAssetSelect.addEventListener('change', function() {
+                if (this.value === 'other') {
+                    filterAssetCustomInput.style.display = 'block';
+                    filterAssetCustomInput.setAttribute('required', 'required');
+                } else {
+                    filterAssetCustomInput.style.display = 'none';
+                    filterAssetCustomInput.removeAttribute('required');
+                }
+                applyFiltersAndSort();
+            });
+
+            // Journal Date setting
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            document.getElementById('journalDate').value = `${year}-${month}-${day}`;
+
+            // Initial data load and UI update
+            loadJournalEntries(); 
+            loadPerformanceGoal();
+            applyFiltersAndSort(); 
+            updateTradingSessionStatus(); 
+
+            // Initial rendering of Chart.js instances (important for hidden elements)
+            renderEquityCurveChart([]); 
+            renderAssetPerformanceChart({});
+            renderTradeTypePerformanceChart({});
+            renderTradingSessionsChart(); 
+
+            // Set interval for dynamic updates
+            setInterval(() => {
+                updateTradingSessionStatus();
+                if (tradingSessionsChartInstance) {
+                    tradingSessionsChartInstance.update(); 
+                }
+            }, 60000); 
+
+            // Tab Logic Initialization
+            showTab('equityCurveTab'); 
+        });
+    </script>
+</body>
+</html>
